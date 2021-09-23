@@ -1,97 +1,51 @@
 # IrrlichtVectorArt
 ## _An Anti-Grain Geometry (AGG) project that works with Irrlicht_
 
-Based on the following Irrlicht forum posts:
+Based on the following AGG project:
 
-- [IrrlichtVideoPlayerLib](https://github.com/mahmoudgalal/IrrlichtVideoPlayerLib)
-- [screen-recorder-ffmpeg-cpp](https://github.com/abdullahfarwees/screen-recorder-ffmpeg-cpp)
-
-Additional features to be supported:
-
-- Output stream to file.
+- [AGG's examples/svg_viewer/svg_test.cpp file](https://github.com/ghaerr/agg-2.6/blob/master/agg-src/examples/svg_viewer/svg_test.cpp)
 
 ## Features
 
-- Play video files and display them on 3D textures.
-- Screen capture and display it on 3D textures.
+- Render SVG files in Irrlicht.
+
+### To be implemented
+
+- Extend Irrlicht's file system to automatically support SVG rather than parsing file extension manually.
 
 ## Installation
 
 Build Irrlicht however you'd like.
 
-Build FFMPEG using the following steps (used [this roxlu article](https://www.roxlu.com/2019/062/compiling-ffmpeg-with-x264-on-windows-10-using-msvc) as a reference):
+Build AGG using the following steps:
 
-1. Install [MSYS2](https://www.msys2.org/) to c:/msys64
-2. Edit c:/msys64/msys2_shell.cmd and remove rem from the line with `rem MSYS2\_PATH\_TYPE=inherit`
-3. Open a x64 Native Tools Command Prompt for VS 2019
-4. Run `c:/msys64/msys2_shell.cmd`
-5. In the new MSYS2 shell, perform:
+1. Download AGG from [their GitHub repo](https://github.com/ghaerr/agg-2.6)
+2. Download libexpat from [their GitHub repo](https://github.com/libexpat/libexpat)
+3. Install [MSYS2](https://www.msys2.org/) to c:/msys64
+4. Edit c:/msys64/msys2_shell.cmd and remove rem from the line with `rem MSYS2\_PATH\_TYPE=inherit`
+5. Open a x64 Native Tools Command Prompt for VS 2019
+6. Run `c:/msys64/msys2_shell.cmd`
+7. In the new MSYS2 shell, perform:
 ```
-pacman -Syu
-pacman -S make
-pacman -S diffutils
-pacman -S yasm
-pacman -S nasm
- 
-mv /usr/bin/link.exe /usr/bin/link.exe.bak
+cd agg/agg-src/
+make
 ```
-6. Get sources for x264 and ffmpeg, then fix build scripts:
+8. (not always necessary) Did you receive an error that the Makefile does not exist? Duplicate file Makefile.in.MINGW32_NT-5.0 and rename to Makefile.in.MSYS_NT-10.0-19042, or whatever the error says it should be.
+9. Get sources for x264 and ffmpeg, then fix build scripts:
 ```
-mkdir tmp
-cd tmp
-mkdir sources
-mkdir build
-cd sources
- 
-git clone --depth 1 https://code.videolan.org/videolan/x264.git
-git clone --depth 1 git://source.ffmpeg.org/ffmpeg.git
+cd expat/win32/
+md build
+cd build
+cmake -G"Visual Studio 16 2019" -DCMAKE_BUILD_TYPE=RelWithDebInfo ../..
+```
+10. Open the new expat/win32/build/expat.sln and build the project for Release and x64
+11. To compile out of the box, make sure your project directory structure looks like this:
 
-cd tmp/sources/x264
-curl "http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD" > config.guess
-sed -i 's/host_os = mingw/host_os = msys/' configure
-```
-7. Compile x264
-```
-cd tmp/build
-mkdir x264
-cd x264
- 
-CC=cl ./../../sources/x264/configure --prefix=./../../installed --enable-shared
-make -j 8
-make install
-mv ./../../installed/lib/libx264.dll.lib ./../../installed/lib/libx264.lib
-```
-8. Compile FFMPEG (_IMPORTANT NOTE:_ This is different than the article referenced earlier):
-```
-cd tmp/build
-mkdir ffmpeg
-cd ffmpeg
- 
-export CC=cl
- 
-./../../sources/ffmpeg/configure \
-             --prefix=./../../installed \
-             --toolchain=msvc \
-             --arch=x86_64 \
-             --enable-yasm  \
-             --enable-asm \
-             --enable-shared \
-             --disable-static \
-             --disable-programs \
-             --enable-libx264 \
-             --enable-gpl \
-             --extra-ldflags="-LIBPATH:./../../installed/lib/" \
-             --extra-cflags="-I./../../installed/include/"
- 
-make V=1 -j 8
- 
-make install
-```
-9. To compile out of the box, make sure your project directory structure looks like this:
+**SomeFolder/IrrlichtVectorArt/IrrlichtVectorArt/** (this repository)
 
-**SomeFolder/IrrlichtVideoPlayerLib/IrrlichtVideoPlayerLib/** (this repository)
+**SomeFolder/Hello/libs/agg/** (this is where AGG should be installed)
 
-**SomeFolder/Hello/libs/tmp/** (place ffmpeg and x264 were installed and built from the previous step)
+**SomeFolder/Hello/libs/libexpat/** (this is where libexpat should be installed)
 
 **SomeFolder/irrlicht-code/** (place Irrlicht was downloaded -- this project uses the statically linked version, so you'll need to build Irrlicht statically)
 
